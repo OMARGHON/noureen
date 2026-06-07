@@ -1,0 +1,1929 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>nouren</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #161920;
+    --surface2: #1e2230;
+    --border: #2a2f3f;
+    --accent: #4f9eff;
+    --accent2: #7c3aed;
+    --green: #22c55e;
+    --red: #ef4444;
+    --amber: #f59e0b;
+    --text: #e8eaf0;
+    --text2: #8892a4;
+    --text3: #525d70;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Cairo', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* top bar */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .topbar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .topbar-logo .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+  .progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .prog-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--border);
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .prog-dot.done { background: var(--green); }
+  .prog-dot.active { background: var(--accent); transform: scale(1.4); }
+
+  .prog-label {
+    font-size: 13px;
+    color: var(--text2);
+    margin-right: 8px;
+  }
+
+  /* layout */
+  .main {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: calc(100vh - 56px);
+  }
+
+  /* sidebar */
+  .sidebar {
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    padding: 1.5rem 0;
+    position: sticky;
+    top: 56px;
+    height: calc(100vh - 56px);
+    overflow-y: auto;
+  }
+
+  .sidebar-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    padding: 0 1.25rem 1rem;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 1.25rem;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text2);
+    transition: all .15s;
+    border-right: 3px solid transparent;
+  }
+
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { color: var(--accent); border-right-color: var(--accent); background: rgba(79,158,255,.07); }
+  .nav-item.done { color: var(--green); }
+
+  .nav-num {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--border);
+    font-size: 11px;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .nav-item.active .nav-num { background: var(--accent); color: #fff; }
+  .nav-item.done .nav-num { background: var(--green); color: #fff; }
+
+  /* content */
+  .content {
+    padding: 2.5rem 3rem;
+    max-width: 860px;
+  }
+
+  .lesson-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--accent);
+    background: rgba(79,158,255,.12);
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 1rem;
+  }
+
+  h1.lesson-title {
+    font-size: 28px;
+    font-weight: 900;
+    line-height: 1.3;
+    margin-bottom: .75rem;
+    color: var(--text);
+  }
+
+  .lesson-desc {
+    font-size: 15px;
+    color: var(--text2);
+    line-height: 1.8;
+    margin-bottom: 2rem;
+    max-width: 600px;
+  }
+
+  /* cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: 1rem;
+  }
+
+  /* memory visualization */
+  .mem-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .mem-cell {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    text-align: center;
+    min-width: 90px;
+    transition: all .3s;
+  }
+
+  .mem-cell.var-cell { border-color: var(--accent); background: rgba(79,158,255,.07); }
+  .mem-cell.ptr-cell { border-color: #7c3aed; background: rgba(124,58,237,.07); }
+  .mem-cell.highlight { box-shadow: 0 0 0 2px var(--accent); }
+
+  .mem-addr { font-size: 10px; color: var(--text3); font-family: var(--mono); margin-bottom: 4px; }
+  .mem-val { font-size: 20px; font-weight: 700; font-family: var(--mono); color: var(--text); }
+  .mem-name { font-size: 11px; color: var(--accent); font-weight: 600; margin-top: 4px; }
+  .mem-cell.ptr-cell .mem-name { color: #a78bfa; }
+
+  .mem-arrow {
+    font-size: 22px;
+    color: var(--text3);
+  }
+
+  /* code block */
+  .code-block {
+    background: #0a0c10;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+
+  .code-header {
+    background: var(--surface2);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .code-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .code-dot:nth-child(1) { background: #ef4444; }
+  .code-dot:nth-child(2) { background: #f59e0b; }
+  .code-dot:nth-child(3) { background: #22c55e; }
+  .code-lang { font-size: 11px; color: var(--text3); margin-right: auto; font-family: var(--mono); }
+
+  .code-body {
+    padding: 1.25rem 1.5rem;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: 2;
+    overflow-x: auto;
+  }
+
+  .kw { color: #818cf8; }
+  .num { color: #34d399; }
+  .str { color: #fbbf24; }
+  .cm { color: #4b5563; font-style: italic; }
+  .ptr-c { color: #f472b6; }
+  .fn { color: #60a5fa; }
+  .out { color: #a3e635; }
+
+  /* editor */
+  .editor-wrap { position: relative; }
+
+  .editor {
+    width: 100%;
+    background: #0a0c10;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13.5px;
+    padding: 1.25rem 1.5rem;
+    min-height: 160px;
+    resize: vertical;
+    outline: none;
+    line-height: 2;
+    transition: border-color .2s;
+  }
+
+  .editor:focus { border-color: var(--accent); }
+
+  .output-box {
+    background: #0a0c10;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.5rem;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.8;
+    min-height: 60px;
+    color: var(--text2);
+    margin-top: 10px;
+    transition: border-color .3s;
+    white-space: pre-wrap;
+  }
+
+  .output-box.ok { border-color: var(--green); color: var(--green); }
+  .output-box.err { border-color: var(--red); color: var(--red); }
+  .output-box.hint { border-color: var(--amber); color: var(--amber); white-space: normal; }
+
+  /* buttons */
+  .btn-row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+
+  .btn {
+    padding: 8px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn:hover { border-color: var(--text2); background: var(--surface); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.primary:hover { background: #3b8de8; }
+  .btn.success { background: var(--green); border-color: var(--green); color: #fff; }
+  .btn.danger { background: var(--red); border-color: var(--red); color: #fff; }
+
+  /* compare grid */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 1.5rem;
+  }
+
+  .compare-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+
+  .compare-card.bad { border-color: rgba(239,68,68,.3); background: rgba(239,68,68,.04); }
+  .compare-card.good { border-color: rgba(34,197,94,.3); background: rgba(34,197,94,.04); }
+
+  .compare-label {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  .compare-card.bad .compare-label { color: var(--red); }
+  .compare-card.good .compare-label { color: var(--green); }
+
+  /* quiz */
+  .quiz-q {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.8;
+    margin-bottom: 1rem;
+    white-space: pre-wrap;
+  }
+
+  .quiz-opt {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text);
+    background: var(--surface);
+    transition: all .15s;
+    font-family: var(--sans);
+  }
+
+  .quiz-opt:hover { border-color: var(--accent); color: var(--accent); }
+  .quiz-opt.correct { border-color: var(--green); background: rgba(34,197,94,.1); color: var(--green); pointer-events: none; }
+  .quiz-opt.wrong { border-color: var(--red); background: rgba(239,68,68,.1); color: var(--red); pointer-events: none; }
+  .quiz-opt.disabled { pointer-events: none; color: var(--text3); }
+
+  .quiz-feedback {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-top: 8px;
+    display: none;
+    line-height: 1.7;
+  }
+
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.ok { background: rgba(34,197,94,.1); color: var(--green); border: 1px solid rgba(34,197,94,.3); }
+  .quiz-feedback.fail { background: rgba(239,68,68,.1); color: #fca5a5; border: 1px solid rgba(239,68,68,.3); }
+
+  /* arithmetic slider */
+  .slider-section { margin-bottom: 1.5rem; }
+
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 1rem;
+  }
+
+  .slider-label { font-size: 14px; color: var(--text2); min-width: 70px; }
+
+  input[type=range] {
+    flex: 1;
+    accent-color: var(--accent);
+    height: 4px;
+    cursor: pointer;
+  }
+
+  .slider-val {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 24px;
+    text-align: center;
+  }
+
+  .arith-result {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--out);
+    margin-top: 8px;
+  }
+
+  /* symbol compare */
+  .symbol-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 1.5rem;
+  }
+
+  .sym-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+  }
+
+  .sym-badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+  }
+
+  .sym-badge.blue { background: rgba(79,158,255,.15); color: var(--accent); }
+  .sym-badge.purple { background: rgba(124,58,237,.15); color: #a78bfa; }
+  .sym-badge.pink { background: rgba(236,72,153,.15); color: #f472b6; }
+
+  .sym-meaning { font-size: 13px; color: var(--text2); line-height: 1.7; margin-bottom: 8px; }
+  .sym-example { font-family: var(--mono); font-size: 12px; color: var(--text3); }
+
+  /* nav */
+  .nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .nav-counter {
+    font-size: 13px;
+    color: var(--text3);
+    font-family: var(--mono);
+  }
+
+  /* animations */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .lesson-enter { animation: fadeIn .3s ease forwards; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* tryit section */
+  .tryit-section {
+    background: linear-gradient(135deg, rgba(79,158,255,.05), rgba(124,58,237,.05));
+    border: 1px solid rgba(79,158,255,.25);
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    margin-top: 1rem;
+  }
+
+  .tryit-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .tryit-icon { font-size: 18px; }
+
+  .tryit-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--accent);
+  }
+
+  .tryit-task {
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.8;
+    margin-bottom: 1rem;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border-radius: 8px;
+    border-right: 3px solid var(--accent);
+  }
+
+  .tryit-task code {
+    background: rgba(79,158,255,.15);
+    color: var(--accent);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+
+  /* explain widget */
+  .explain-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .explain-line {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: rgba(79,158,255,.05);
+    border-right: 2px solid rgba(79,158,255,.3);
+  }
+
+  .explain-code {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: #a78bfa;
+    min-width: 160px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .explain-text {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+
+  .explain-tip {
+    margin-top: 8px;
+    padding: 10px 14px;
+    background: rgba(245,158,11,.08);
+    border: 1px solid rgba(245,158,11,.25);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--amber);
+    line-height: 1.7;
+  }
+
+  /* ===== INLINE CODE BREAKDOWN BOX ===== */
+  .breakdown-box {
+    background: linear-gradient(135deg, rgba(124,58,237,.06), rgba(79,158,255,.06));
+    border: 1px solid rgba(124,58,237,.3);
+    border-radius: 14px;
+    margin: 0 0 1.5rem 0;
+    overflow: hidden;
+  }
+
+  .breakdown-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: rgba(124,58,237,.12);
+    border-bottom: 1px solid rgba(124,58,237,.2);
+    font-size: 12px;
+    font-weight: 700;
+    color: #a78bfa;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+  }
+
+  .breakdown-lines {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .bd-line {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: stretch;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    transition: background .15s;
+  }
+  .bd-line:last-child { border-bottom: none; }
+  .bd-line:hover { background: rgba(255,255,255,.025); }
+
+  .bd-lnum {
+    width: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    background: rgba(0,0,0,.2);
+    flex-shrink: 0;
+    border-left: 3px solid transparent;
+  }
+
+  .bd-line.highlight-line .bd-lnum {
+    border-left-color: var(--accent);
+    color: var(--accent);
+    background: rgba(79,158,255,.08);
+  }
+
+  .bd-content {
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .bd-code-raw {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--text);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    align-items: center;
+  }
+
+  /* each token in the code line */
+  .tok {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: var(--mono);
+    font-size: 12px;
+    cursor: default;
+    position: relative;
+    transition: all .15s;
+  }
+  .tok:hover { filter: brightness(1.3); transform: translateY(-1px); }
+
+  .tok-kw   { color: #818cf8; background: rgba(129,140,248,.12); }
+  .tok-var  { color: var(--text); }
+  .tok-op   { color: #f472b6; font-weight: 700; }
+  .tok-num  { color: #34d399; background: rgba(52,211,153,.1); }
+  .tok-ptr  { color: #f472b6; background: rgba(244,114,182,.12); font-weight: 700; }
+  .tok-fn   { color: #60a5fa; }
+  .tok-str  { color: #fbbf24; }
+  .tok-amp  { color: #fb923c; background: rgba(251,146,60,.12); font-weight: 700; }
+  .tok-addr { color: #a78bfa; background: rgba(167,139,250,.1); font-size: 11px; }
+  .tok-cm   { color: #4b5563; font-style: italic; font-size: 11px; }
+  .tok-semi { color: var(--text3); }
+  .tok-punc { color: #94a3b8; }
+
+  .bd-explanation {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .bd-summary {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.7;
+    padding-right: 4px;
+  }
+
+  /* per-token detail rows */
+  .tok-details {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-top: 2px;
+  }
+
+  .tok-detail-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 3px 8px;
+    border-radius: 5px;
+    background: rgba(0,0,0,.15);
+  }
+
+  .tdr-token {
+    font-family: var(--mono);
+    font-size: 11px;
+    min-width: 90px;
+    flex-shrink: 0;
+  }
+
+  .tdr-meaning {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+
+  .tdr-token.kw   { color: #818cf8; }
+  .tdr-token.ptr  { color: #f472b6; }
+  .tdr-token.amp  { color: #fb923c; }
+  .tdr-token.num  { color: #34d399; }
+  .tdr-token.fn   { color: #60a5fa; }
+  .tdr-token.str  { color: #fbbf24; }
+  .tdr-token.cm   { color: #6b7280; }
+  .tdr-token.var  { color: var(--text); }
+  .tdr-token.semi { color: #6b7280; }
+
+  .bd-memory-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    padding: 6px 10px;
+    background: rgba(79,158,255,.06);
+    border: 1px dashed rgba(79,158,255,.2);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--accent);
+  }
+
+  .bd-empty-line {
+    padding: 6px 14px;
+    font-size: 11px;
+    color: var(--text3);
+    font-style: italic;
+  }
+
+  /* celebration overlay */
+  .celebration-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(13,15,20,.92);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    gap: 1.5rem;
+    animation: fadeIn .4s ease forwards;
+  }
+  .celebration-overlay.show { display: flex; }
+
+  .celeb-stars {
+    font-size: 60px;
+    animation: bounce 1s infinite alternate;
+  }
+  @keyframes bounce {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-14px); }
+  }
+
+  .celeb-name {
+    font-size: 52px;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--accent), #a78bfa, #f472b6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -.02em;
+    line-height: 1.1;
+  }
+
+  .celeb-msg {
+    font-size: 20px;
+    color: var(--text2);
+    line-height: 1.7;
+    max-width: 420px;
+  }
+
+  .celeb-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #4f9eff22, #7c3aed22);
+    border: 1px solid rgba(79,158,255,.4);
+    border-radius: 50px;
+    padding: 10px 28px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: .04em;
+  }
+
+  .celeb-close {
+    margin-top: .5rem;
+    padding: 10px 28px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text2);
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .celeb-close:hover { border-color: var(--text2); color: var(--text); }
+
+  .confetti-wrap {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 998;
+  }
+  .confetti-piece {
+    position: absolute;
+    width: 10px; height: 10px;
+    top: -20px;
+    border-radius: 2px;
+    animation: confettiFall linear forwards;
+  }
+  @keyframes confettiFall {
+    to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  @media (max-width: 700px) {
+    .main { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .content { padding: 1.5rem; }
+    .compare-grid { grid-template-columns: 1fr; }
+    .symbol-cards { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="confetti-wrap" id="confettiWrap"></div>
+
+<div class="celebration-overlay" id="celebrationOverlay">
+  <div class="celeb-stars">⭐🌟⭐</div>
+  <div class="celeb-name">شاطرة نوريين!</div>
+  <div class="celeb-msg">أنهيتِ الكورس كله وفهمتِ الـ Pointers في C 💪<br>يلا بقي قومي روحي! 🚀</div>
+  <div class="celeb-badge">🏆 Pointers Expert</div>
+  <button class="celeb-close" onclick="document.getElementById('celebrationOverlay').classList.remove('show');document.getElementById('confettiWrap').innerHTML=''">✕ رجعي للدروس</button>
+</div>
+
+<div class="topbar">
+  <div class="topbar-logo">
+    <div class="dot"></div>
+    nouren
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span class="prog-label" id="progLabel">درس 1 من 8</span>
+    <div class="progress-wrap" id="topProgress"></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="sidebar">
+    <div class="sidebar-title">المحتوى</div>
+    <div id="navItems"></div>
+  </div>
+
+  <div class="content">
+    <div id="lessonArea" class="lesson-enter"></div>
+  </div>
+</div>
+
+<script>
+const lessons = [
+  {
+    tag: "المقدمة",
+    title: "ما هو الـ Pointer؟",
+    desc: "تخيل الذاكرة (RAM) زي شارع فيه بيوت — كل بيت ليه رقم (عنوان) وجواه حاجة (قيمة). الـ Pointer هو متغير مش بيخزن قيمة عادية، بيخزن رقم العنوان بتاع بيت تاني! يعني بدل ما يحفظ 10، بيحفظ 'روح البيت رقم 0x2000 وهتلاقي جواه 10'. ده بيديك قوة إنك توصل لأي متغير وتعدل عليه من أي حتة في الكود.",
+    type: "concept_viz",
+    tryit: {
+      task: "اكتب متغير اسمه <code>num</code> قيمته <code>42</code>، وعمل pointer اسمه <code>p</code> يشاور عليه، واطبع قيمة num عن طريق الـ pointer.",
+      starter: "int num = 42;\nint* p = &num;\nprintf(\"%d\", *p);",
+      hint: "💡 عشان توصل للقيمة عن طريق الـ pointer، لازم تحط * قبله: *p"
+    }
+  },
+  {
+    tag: "الأساسيات",
+    title: "الرموز الثلاثة — وازن بينهم كويس",
+    desc: "الـ Pointers فيها 3 رموز بس كتير ناس بيتخلطوا فيهم. الفرق بسيط: &x عنوان المتغير، ptr المؤشر اللي بيحفظ العنوان ده، و *ptr القيمة الفعلية اللي موجودة في العنوان ده. شوف كل واحد وفين بيستخدم ↓",
+    type: "symbols",
+    tryit: {
+      task: "عندك <code>int score = 99;</code> — اعمل pointer يشاور عليه، وجرّب تطبع الـ 3 حاجات: القيمة عن طريق *ptr، وعنوان المتغير &score، وعنوان المتغير عن طريق ptr نفسه.",
+      starter: "int score = 99;\nint* ptr = &score;\nprintf(\"%d\\n\", *ptr);\nprintf(\"%p\\n\", &score);\nprintf(\"%p\\n\", ptr);",
+      hint: "💡 &score وptr المفروض يطبعوا نفس العنوان — لأن ptr = &score"
+    }
+  },
+  {
+    tag: "مثال",
+    title: "أول Pointer حقيقي — سطر بسطر",
+    desc: "خلينا نشوف الـ Pointer في action. كل سطر في الكود ده مهم — لاحظ إن &x وptr بيطبعوا نفس العنوان (لأن ptr شايل عنوان x)، وإن *ptr وx بيطبعوا نفس القيمة (لأن *ptr بيروح للعنوان ده ويجيب اللي جواه).",
+    type: "code_example",
+    code: [
+      `<span class="kw">int</span> x = <span class="num">10</span>;                      <span class="cm">// متغير عادي قيمته 10</span>`,
+      `<span class="kw">int</span><span class="ptr-c">*</span> ptr = &x;               <span class="cm">// ptr شايل عنوان x في الذاكرة</span>`,
+      ``,
+      `<span class="fn">printf</span>(<span class="str">"%d\\n"</span>, x);          <span class="cm">// Output: 10  ← القيمة عادي</span>`,
+      `<span class="fn">printf</span>(<span class="str">"%p\\n"</span>, &x);         <span class="cm">// Output: 0x2000  ← عنوان x</span>`,
+      `<span class="fn">printf</span>(<span class="str">"%p\\n"</span>, ptr);        <span class="cm">// Output: 0x2000  ← نفس العنوان! ptr = &x</span>`,
+      `<span class="fn">printf</span>(<span class="str">"%d\\n"</span>, <span class="ptr-c">*</span>ptr);       <span class="cm">// Output: 10  ← روح العنوان وجيب القيمة</span>`,
+    ],
+    tryit: {
+      task: "اعمل نفس الكود بس مع متغير <code>age = 20</code> بدل x. اطبع قيمته الـ 4 طرق: عادي، عنوانه، عنوانه عن طريق ptr، وقيمته عن طريق *ptr.",
+      starter: "int age = 20;\nint* ptr = &age;\nprintf(\"%d\\n\", age);\nprintf(\"%p\\n\", &age);\nprintf(\"%p\\n\", ptr);\nprintf(\"%d\\n\", *ptr);",
+      hint: "💡 السطرين اللي بيطبعوا عناوين المفروض يطبعوا نفس القيمة تماماً"
+    }
+  },
+  {
+    tag: "تجربة",
+    title: "جرّب بنفسك — مش هتفهم غير كده!",
+    desc: "الكود الموجود صح وشغال. اضغط شغّل وشوف الـ output — المفروض يطبع 25. جرّب تغيّر الـ 25 لأي رقم تاني وشوف النتيجة بتتغير. الفكرة: *ptr بيوصل لقيمة y عن طريق عنوانها بدل ما نكتب y مباشرة.",
+    type: "tryit",
+    tryit: {
+      task: "اعمل 3 متغيرات a=1، b=2، c=3 — وعمل pointer بيشاور على كل واحد وبيطبع قيمته. يعني مرة *ptr = 1، ومرة = 2، ومرة = 3.",
+      starter: "int a = 1, b = 2, c = 3;\nint* ptr;\nptr = &a;\nprintf(\"%d\\n\", *ptr);\nptr = &b;\nprintf(\"%d\\n\", *ptr);\nptr = &c;\nprintf(\"%d\\n\", *ptr);",
+      hint: "💡 نفس الـ pointer ممكن يشاور على متغيرات مختلفة — بس مرة واحدة بس في كل وقت"
+    }
+  },
+  {
+    tag: "التغيير",
+    title: "عدّل القيمة عن طريق الـ Pointer",
+    desc: "ده أهم حاجة! لما تكتب *ptr = 20، مش بتغير الـ pointer نفسه — بتروح للعنوان اللي ptr شايله وبتغير الـ value الموجودة هناك. يعني x اتغيرت من 5 لـ 20 من غير ما تلمس x مباشرة. ده هو سر قوة الـ Pointers!",
+    type: "code_example",
+    code: [
+      `<span class="kw">int</span> x = <span class="num">5</span>;`,
+      `<span class="kw">int</span><span class="ptr-c">*</span> ptr = &x;         <span class="cm">// ptr شايل عنوان x</span>`,
+      ``,
+      `<span class="ptr-c">*</span>ptr = <span class="num">20</span>;            <span class="cm">// روح العنوان ده وغيّر القيمة لـ 20</span>`,
+      ``,
+      `<span class="fn">printf</span>(<span class="str">"%d"</span>, x);      <span class="cm">// Output: 20 ← x اتغيرت! مش 5 تاني</span>`,
+    ],
+    tryit: {
+      task: "اعمل متغير <code>temp = 100</code>، وعمل pointer يشاور عليه. غيّر قيمته لـ 37 عن طريق الـ pointer، واطبع temp قبل وبعد التغيير.",
+      starter: "int temp = 100;\nint* ptr = &temp;\nprintf(\"قبل: %d\\n\", temp);\n*ptr = 37;\nprintf(\"بعد: %d\\n\", temp);",
+      hint: "💡 *ptr = 37 بتغير temp نفسه في الذاكرة — مش الـ pointer"
+    }
+  },
+  {
+    tag: "حسابات",
+    title: "Pointer Arithmetic — الـ Pointer بيتحرك في الذاكرة",
+    desc: "لما تعمل ptr+1 على int pointer، ما بيضيفش 1 — بيضيف 4 bytes (حجم الـ int). يعني بيقفز للعنصر الجاي في الـ array! حرّك الـ slider وشوف بنفسك إزاي الـ pointer بيمشي على الـ array.",
+    type: "arithmetic",
+    tryit: {
+      task: "عندك array: <code>int arr[] = {5, 10, 15, 20};</code> — اعمل pointer يشاور عليه واطبع العنصر الأول والتالت باستخدام <code>*(ptr+0)</code> و <code>*(ptr+2)</code>.",
+      starter: "int arr[] = {5, 10, 15, 20};\nint* ptr = arr;\nprintf(\"%d\\n\", *(ptr+0));\nprintf(\"%d\\n\", *(ptr+2));",
+      hint: "💡 *(ptr+0) = arr[0] = 5 وكده. ptr بيتحرك بمقدار 4 bytes لكل +1"
+    }
+  },
+  {
+    tag: "Value vs Reference",
+    title: "Pass by Value vs Pass by Reference",
+    desc: "ده فرق جوهري في البرمجة. Pass by Value = بتبعت نسخة من المتغير، التغيير ما بيأثرش على الأصل. Pass by Reference = بتبعت عنوان المتغير الحقيقي، فأي تغيير في الـ function بيأثر على الأصل مباشرة. الـ Pointers هي الطريقة إننا نعمل Pass by Reference في C.",
+    type: "compare",
+    tryit: {
+      task: "اكتب function اسمها <code>double_it</code> بتاخد pointer لـ int وتضاعف قيمته. نادي عليها مع متغير <code>x = 5</code> واطبع x بعدها — المفروض يطبع 10.",
+      starter: "void double_it(int* n) {\n    *n = *n * 2;\n}\n\nint x = 5;\ndouble_it(&x);\nprintf(\"%d\\n\", x);",
+      hint: "💡 لازم تبعت &x مش x — عشان الـ function توصل للمتغير الأصلي"
+    }
+  },
+  {
+    tag: "اختبار",
+    title: "اختبر فهمك — سؤال واحد بس!",
+    desc: "خد ثانية اقرأ الكود كويس قبل ما تختار. فكّر: ptr شايل عنوان إيه؟ و *ptr بيعمل إيه بالظبط؟",
+    type: "quiz",
+    question: `int x = 7;\nint* ptr = &x;\nprintf("%d", *ptr);`,
+    options: ["عنوان x في الذاكرة", "7", "ptr", "خطأ في الكود"],
+    correct: 1,
+    explanation: "✅ صح! ptr شايل عنوان x (اللي قيمتها 7). لما كتبنا *ptr، قلنا للـ compiler: روح العنوان ده وجيبلي القيمة اللي جواه — وده x = 7",
+    tryit: {
+      task: "اكتب الكود ده بنفسك من الأول من غير ما تنظر، وجرّب تغيّر قيمة x لأي رقم تاني وشوف النتيجة.",
+      starter: "int x = 7;\nint* ptr = &x;\nprintf(\"%d\\n\", *ptr);",
+      hint: "💡 جرّب غيّر الـ 7 لأي رقم وشوف الـ output بيتغير"
+    }
+  }
+];
+
+const navNames = ["ما هو الـ Pointer؟","الرموز الـ 3 المهمة","أول Pointer حقيقي","جرّب بنفسك","عدّل بالـ Pointer","Pointer Arithmetic","Value vs Reference","اختبار نهائي"];
+
+let current = 0;
+const completed = new Set();
+
+function buildNav() {
+  const el = document.getElementById('navItems');
+  el.innerHTML = lessons.map((l,i) => `
+    <div class="nav-item ${i===current?'active':''} ${completed.has(i)?'done':''}" onclick="goTo(${i})">
+      <div class="nav-num">${completed.has(i)?'✓':(i+1)}</div>
+      <span>${navNames[i]}</span>
+    </div>`).join('');
+}
+
+function buildTopProgress() {
+  document.getElementById('topProgress').innerHTML = lessons.map((_,i)=>
+    `<div class="prog-dot ${i===current?'active':completed.has(i)?'done':''}" onclick="goTo(${i})"></div>`
+  ).join('');
+  document.getElementById('progLabel').textContent = `درس ${current+1} من ${lessons.length}`;
+}
+
+function goTo(i) {
+  completed.add(current);
+  current = i;
+  lastRunOutput = null;
+  render();
+}
+
+function codeBlock(lines, label="main.c") {
+  return `<div class="code-block">
+    <div class="code-header">
+      <div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div>
+      <span class="code-lang">${label}</span>
+    </div>
+    <div class="code-body">${lines.map(l=>`<div>${l||'&nbsp;'}</div>`).join('')}</div>
+  </div>`;
+}
+
+function tryitBlock(t) {
+  return `
+    <div class="tryit-section">
+      <div class="tryit-header">
+        <span class="tryit-icon">⌨️</span>
+        <span class="tryit-label">جرّب بنفسك</span>
+      </div>
+      <div class="tryit-task">${t.task}</div>
+      <textarea class="editor" id="userCode" placeholder="✏️ اكتب الكود هنا..."></textarea>
+      <div class="btn-row">
+        <button class="btn primary" onclick="runCode()">▶ شغّل الكود</button>
+        <button class="btn" id="explainBtn" onclick="askClaude()" disabled style="opacity:0.4;cursor:not-allowed;">🤖 فسّرلي</button>
+        <button class="btn" onclick="showHint()">💡 تلميح</button>
+        <button class="btn" onclick="resetCode()">↺ إعادة</button>
+      </div>
+      <div class="output-box" id="outputBox">✏️ اكتب كودك فوق واضغط شغّل...</div>
+    </div>`;
+}
+
+function render() {
+  buildNav();
+  buildTopProgress();
+  const l = lessons[current];
+  let html = `<div class="lesson-enter">
+    <div class="lesson-tag">${l.tag}</div>
+    <h1 class="lesson-title">${l.title}</h1>
+    <p class="lesson-desc">${l.desc}</p>`;
+
+  if(l.type === 'concept_viz') {
+    html += `<div class="card">
+      <div class="card-title">🧠 تصوّر الذاكرة — x موجودة في عنوان، ptr شايل العنوان ده</div>
+      <div class="mem-row">
+        <div class="mem-cell var-cell">
+          <div class="mem-addr">0x2000</div>
+          <div class="mem-val">10</div>
+          <div class="mem-name">int x</div>
+        </div>
+        <div class="mem-arrow">←</div>
+        <div class="mem-cell ptr-cell">
+          <div class="mem-addr">0x3000</div>
+          <div class="mem-val" style="font-size:14px;color:#a78bfa">0x2000</div>
+          <div class="mem-name">int* ptr</div>
+        </div>
+      </div>
+    </div>`;
+    html += codeBlock([
+      `<span class="kw">int</span> x = <span class="num">10</span>;`,
+      `<span class="kw">int</span><span class="ptr-c">*</span> ptr = &x;  <span class="cm">// ptr بيخزن عنوان x</span>`,
+    ]);
+    html += buildBreakdown(0);
+  }
+
+  if(l.type === 'symbols') {
+    html += `<div class="symbol-cards">
+      <div class="sym-card">
+        <div class="sym-badge blue">&x</div>
+        <div class="sym-meaning">عنوان x في الذاكرة — زي رقم البيت. مش القيمة، العنوان!</div>
+        <div class="sym-example">printf("%p", &x);<br>// Output: 0x2000</div>
+      </div>
+      <div class="sym-card">
+        <div class="sym-badge purple">ptr</div>
+        <div class="sym-meaning">المتغير الـ Pointer نفسه — شايل عنوان x. يعني ptr = 0x2000</div>
+        <div class="sym-example">printf("%p", ptr);<br>// Output: 0x2000</div>
+      </div>
+      <div class="sym-card">
+        <div class="sym-badge pink">*ptr</div>
+        <div class="sym-meaning">الـ "dereference" — روح للعنوان ده وجيبلي القيمة اللي جواه</div>
+        <div class="sym-example">printf("%d", *ptr);<br>// Output: 10</div>
+      </div>
+    </div>`;
+    html += buildBreakdown(1);
+  }
+
+  if(l.type === 'code_example') {
+    html += codeBlock(l.code);
+    html += buildBreakdown(current);
+  }
+
+  if(l.type === 'arithmetic') {
+    html += `<div class="slider-section">
+      <div class="slider-row">
+        <span class="slider-label">ptr + </span>
+        <input type="range" min="0" max="3" value="0" step="1" id="ptrSlider" oninput="updateArith(this.value)">
+        <span class="slider-val" id="ptrVal">0</span>
+      </div>
+      <div class="mem-row" id="arithMem"></div>
+      <div class="arith-result" id="arithResult"></div>
+    </div>`;
+    html += codeBlock([
+      `<span class="kw">int</span> arr[<span class="num">4</span>] = {<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>, <span class="num">40</span>};`,
+      `<span class="kw">int</span><span class="ptr-c">*</span> ptr = arr;`,
+      ``,
+      `<span class="fn">printf</span>(<span class="str">"%d"</span>, <span class="ptr-c">*</span>(ptr+<span class="num">0</span>));  <span class="cm">// 10</span>`,
+      `<span class="fn">printf</span>(<span class="str">"%d"</span>, <span class="ptr-c">*</span>(ptr+<span class="num">1</span>));  <span class="cm">// 20</span>`,
+      `<span class="fn">printf</span>(<span class="str">"%d"</span>, <span class="ptr-c">*</span>(ptr+<span class="num">2</span>));  <span class="cm">// 30</span>`,
+    ]);
+    html += buildBreakdown(5);
+  }
+
+  if(l.type === 'compare') {
+    html += `<div class="compare-grid">
+      <div class="compare-card bad">
+        <div class="compare-label">❌ Pass by Value</div>
+        ${codeBlock([
+          `<span class="kw">void</span> <span class="fn">change</span>(<span class="kw">int</span> n) {`,
+          `&nbsp;&nbsp;n = <span class="num">100</span>;`,
+          `}`,
+          ``,
+          `<span class="fn">change</span>(x); <span class="cm">// x مش بتتغير</span>`,
+        ], "pass_value.c")}
+        <p style="font-size:13px;color:var(--text2);margin-top:-8px;">⚠️ بيبعت <strong>نسخة</strong> من x — أي تغيير داخل الـ function ما بيأثرش على x الأصلية بره</p>
+      </div>
+      <div class="compare-card good">
+        <div class="compare-label">✅ Pass by Reference</div>
+        ${codeBlock([
+          `<span class="kw">void</span> <span class="fn">change</span>(<span class="kw">int</span><span class="ptr-c">*</span> n) {`,
+          `&nbsp;&nbsp;<span class="ptr-c">*</span>n = <span class="num">100</span>;`,
+          `}`,
+          ``,
+          `<span class="fn">change</span>(&x); <span class="cm">// x بتتغير!</span>`,
+        ], "pass_ref.c")}
+        <p style="font-size:13px;color:var(--text2);margin-top:-8px;">✅ بيبعت <strong>العنوان الحقيقي</strong> لـ x — التغيير بيأثر على x نفسها في الذاكرة!</p>
+      </div>
+    </div>`;
+    html += buildBreakdown(6);
+  }
+
+  if(l.type === 'quiz') {
+    html += `<div class="quiz-q">${l.question}</div>`;
+    l.options.forEach((opt,i) => {
+      html += `<div class="quiz-opt" id="opt${i}" onclick="checkAns(${i})">${opt}</div>`;
+    });
+    html += `<div class="quiz-feedback" id="quizFb"></div>`;
+    html += buildBreakdown(7);
+  }
+
+  if(l.type === 'tryit') {
+    html += buildBreakdown(3);
+  }
+
+  // Every lesson gets a tryit block
+  if(l.tryit) {
+    html += tryitBlock(l.tryit);
+  }
+
+  html += `<div class="nav-buttons">
+    <button class="btn" onclick="prev()" ${current===0?'disabled':''}>← السابق</button>
+    <span class="nav-counter">${current+1} / ${lessons.length}</span>
+    ${current < lessons.length-1
+      ? `<button class="btn primary" onclick="next()">التالي →</button>`
+      : `<button class="btn success" onclick="showCelebration()">🎉 أنهيت الكورس</button>`
+    }
+  </div></div>`;
+
+  document.getElementById('lessonArea').innerHTML = html;
+
+  if(l.type === 'arithmetic') updateArith(0);
+}
+
+function updateArith(val) {
+  val = parseInt(val);
+  document.getElementById('ptrVal').textContent = val;
+  const arr = [10,20,30,40];
+  const addrs = [100,104,108,112];
+  let memHtml = '';
+  arr.forEach((v,i) => {
+    const active = i===val;
+    memHtml += `<div class="mem-cell ${active?'highlight var-cell':''}">
+      <div class="mem-addr">${addrs[i]}</div>
+      <div class="mem-val" style="${active?'color:var(--accent)':''}">${v}</div>
+      <div class="mem-name">${active?'← ptr':''}</div>
+    </div>`;
+    if(i<3) memHtml += `<span style="font-size:11px;color:var(--text3);align-self:center;">+4</span>`;
+  });
+  document.getElementById('arithMem').innerHTML = memHtml;
+  document.getElementById('arithResult').textContent = `*(ptr + ${val})  =  ${arr[val]}     →     arr[${val}] = ${arr[val]}`;
+}
+
+// =====================================================
+// INLINE CODE BREAKDOWN — شرح كل سطر وكل رمز بالتفصيل
+// =====================================================
+
+const lessonBreakdowns = [
+  // درس 0 — ما هو الـ Pointer
+  {
+    lessonIndex: 0,
+    lines: [
+      {
+        raw: "int x = 10;",
+        tokens: [
+          { text: "int",  cls: "kw",  meaning: "كلمة مفتاحية (keyword) — بتقول للـ compiler: اعمل متغير من نوع عدد صحيح" },
+          { text: "x",    cls: "var", meaning: "اسم المتغير — إنت اللي اخترته، ممكن يكون أي اسم" },
+          { text: "=",    cls: "op",  meaning: "عامل التعيين (assignment) — ضع القيمة دي جوا المتغير" },
+          { text: "10",   cls: "num", meaning: "القيمة اللي هتتخزن — عدد صحيح قيمته عشرة" },
+          { text: ";",    cls: "semi",meaning: "فاصلة منقوطة — لازم تحطها في آخر كل سطر في C، زي النقطة في آخر الجملة" },
+        ],
+        summary: "بنعمل متغير اسمه x ونحط فيه القيمة 10. الـ compiler بيحجز مكان في الذاكرة (RAM) وبيحط فيه 10.",
+        memHint: "الذاكرة: عنوان 0x2000 → داخله القيمة 10 → اسمه x"
+      },
+      {
+        raw: "int* ptr = &x;",
+        tokens: [
+          { text: "int",  cls: "kw",  meaning: "النوع الأساسي — الـ pointer ده بيشاور على متغير من نوع int" },
+          { text: "*",    cls: "ptr", meaning: "النجمة دي في التعريف بتقول: مش متغير عادي، ده Pointer! يعني هيخزن عنوان مش قيمة" },
+          { text: "ptr",  cls: "var", meaning: "اسم الـ Pointer — إنت اللي اخترته" },
+          { text: "=",    cls: "op",  meaning: "عامل التعيين — ضع العنوان ده جوا ptr" },
+          { text: "&",    cls: "amp", meaning: "رمز عنوان الذاكرة (address-of operator) — بيجيب رقم العنوان اللي فيه x في الـ RAM" },
+          { text: "x",    cls: "var", meaning: "المتغير اللي عايزين عنوانه — هو اللي عملناه في السطر اللي فات" },
+          { text: ";",    cls: "semi",meaning: "نهاية السطر" },
+        ],
+        summary: "بنعمل Pointer اسمه ptr — مش بيخزن قيمة عادية! بيخزن عنوان المكان اللي فيه x في الذاكرة.",
+        memHint: "الذاكرة: عنوان 0x3000 → داخله القيمة 0x2000 (=عنوان x) → اسمه ptr"
+      }
+    ],
+    tip: "💡 الفكرة: x زي بيت جواه رقم 10. ptr زي ورقة كتبنا عليها عنوان البيت ده. *ptr = روح البيت ده وجيبلي اللي جواه!"
+  },
+
+  // درس 1 — الرموز الثلاثة
+  {
+    lessonIndex: 1,
+    lines: [
+      {
+        raw: "&x",
+        tokens: [
+          { text: "&",  cls: "amp", meaning: "Address-Of Operator — بيجيب عنوان المتغير في الذاكرة" },
+          { text: "x",  cls: "var", meaning: "المتغير اللي عايز عنوانه" },
+        ],
+        summary: "بيرجع رقم المكان اللي فيه x في الـ RAM — مش القيمة، العنوان نفسه. زي رقم البيت على الخريطة."
+      },
+      {
+        raw: "ptr",
+        tokens: [
+          { text: "ptr", cls: "var", meaning: "الـ Pointer نفسه — متغير شايل جواه عنوان متغير تاني" },
+        ],
+        summary: "ptr متغير عادي بس قيمته عنوان — لما بتكتبه لوحده بتجيب العنوان اللي هو شايله. ptr == &x يعني نفس العنوان."
+      },
+      {
+        raw: "*ptr",
+        tokens: [
+          { text: "*",   cls: "ptr", meaning: "Dereference Operator — هنا في الاستخدام (مش في التعريف!): روح للعنوان ده وجيبلي القيمة اللي جواه" },
+          { text: "ptr", cls: "var", meaning: "الـ Pointer اللي شايل العنوان" },
+        ],
+        summary: "بتروح للعنوان اللي ptr شايله وبتجيب القيمة الموجودة هناك. زي إنك تروح البيت رقم ده وتفتح الباب وتشوف جواه إيه."
+      }
+    ],
+    tip: "💡 سهّلها عليك: & = 'فين'، ptr = 'رقم العنوان'، *ptr = 'اللي جوا العنوان ده'"
+  },
+
+  // درس 2 — أول Pointer حقيقي
+  {
+    lessonIndex: 2,
+    lines: [
+      {
+        raw: "int x = 10;",
+        tokens: [
+          { text: "int", cls: "kw",  meaning: "نوع البيانات — عدد صحيح" },
+          { text: "x",   cls: "var", meaning: "اسم المتغير" },
+          { text: "=",   cls: "op",  meaning: "التعيين" },
+          { text: "10",  cls: "num", meaning: "القيمة" },
+          { text: ";",   cls: "semi",meaning: "نهاية السطر" },
+        ],
+        summary: "متغير عادي x فيه القيمة 10. الـ compiler حجزله مكان في الذاكرة.",
+        memHint: "x → عنوان 0x2000 → قيمة 10"
+      },
+      {
+        raw: "int* ptr = &x;",
+        tokens: [
+          { text: "int", cls: "kw",  meaning: "نوع الـ pointer — هيشاور على int" },
+          { text: "*",   cls: "ptr", meaning: "في التعريف: بيقول إن ptr ده Pointer مش متغير عادي" },
+          { text: "ptr", cls: "var", meaning: "اسم الـ pointer" },
+          { text: "=",   cls: "op",  meaning: "التعيين" },
+          { text: "&",   cls: "amp", meaning: "جيب عنوان x من الذاكرة" },
+          { text: "x",   cls: "var", meaning: "المتغير اللي عايزين عنوانه" },
+          { text: ";",   cls: "semi",meaning: "نهاية السطر" },
+        ],
+        summary: "ptr بيخزن عنوان x — مش القيمة 10! بيخزن الـ address اللي فيه 10.",
+        memHint: "ptr → عنوان 0x3000 → قيمة 0x2000 (= عنوان x)"
+      },
+      {
+        raw: 'printf("%d\\n", x);',
+        tokens: [
+          { text: "printf", cls: "fn",  meaning: "دالة الطباعة في C" },
+          { text: '"%d\\n"', cls: "str", meaning: "%d = اطبع عدد صحيح، \\n = سطر جديد" },
+          { text: "x",      cls: "var", meaning: "المتغير نفسه — بيطبع قيمته مباشرة وهي 10" },
+        ],
+        summary: "بيطبع قيمة x مباشرة. Output: 10"
+      },
+      {
+        raw: 'printf("%p\\n", &x);',
+        tokens: [
+          { text: "printf", cls: "fn",  meaning: "دالة الطباعة" },
+          { text: '"%p\\n"', cls: "str", meaning: "%p = اطبع عنوان ذاكرة (Pointer format) بتبقى شكلها 0x..." },
+          { text: "&x",     cls: "amp", meaning: "عنوان x في الذاكرة — مش قيمتها!" },
+        ],
+        summary: "بيطبع عنوان x في الذاكرة. Output: 0x2000 (مثلاً)"
+      },
+      {
+        raw: 'printf("%p\\n", ptr);',
+        tokens: [
+          { text: "printf", cls: "fn",  meaning: "دالة الطباعة" },
+          { text: '"%p\\n"', cls: "str", meaning: "%p = اطبع عنوان" },
+          { text: "ptr",    cls: "var", meaning: "ptr نفسه (بدون * !) — قيمته هي العنوان اللي خزّناه فيه" },
+        ],
+        summary: "بيطبع قيمة ptr وهي نفسها عنوان x! Output: 0x2000 — نفس الرقم اللي طبعه السطر اللي فاته!"
+      },
+      {
+        raw: 'printf("%d\\n", *ptr);',
+        tokens: [
+          { text: "printf", cls: "fn",  meaning: "دالة الطباعة" },
+          { text: '"%d\\n"', cls: "str", meaning: "%d = اطبع عدد صحيح" },
+          { text: "*",      cls: "ptr", meaning: "Dereference — هنا في الاستخدام: روح للعنوان اللي ptr شايله" },
+          { text: "ptr",    cls: "var", meaning: "الـ Pointer — جوّاه العنوان 0x2000" },
+        ],
+        summary: "بيروح العنوان 0x2000 ويجيب القيمة اللي جواه وهي 10. Output: 10 — زي x تماماً!",
+        memHint: "*ptr = روح 0x2000 → اجيب القيمة → 10"
+      }
+    ],
+    tip: "💡 لاحظ: &x وptr بيطبعوا نفس الرقم ✅ وx و*ptr بيطبعوا نفس القيمة ✅ — ده هو الـ Pointer!"
+  },
+
+  // درس 3 — جرّب بنفسك (لا يوجد code block ثابت، له tryit فقط)
+  {
+    lessonIndex: 3,
+    lines: [
+      {
+        raw: "int a = 1, b = 2, c = 3;",
+        tokens: [
+          { text: "int",    cls: "kw",  meaning: "نوع البيانات — عدد صحيح" },
+          { text: "a = 1",  cls: "var", meaning: "متغير a قيمته 1" },
+          { text: ",",      cls: "punc",meaning: "فاصلة — بتفصل بين المتغيرات في نفس السطر" },
+          { text: "b = 2",  cls: "var", meaning: "متغير b قيمته 2" },
+          { text: ",",      cls: "punc",meaning: "فاصلة" },
+          { text: "c = 3",  cls: "var", meaning: "متغير c قيمته 3" },
+          { text: ";",      cls: "semi",meaning: "نهاية السطر" },
+        ],
+        summary: "بنعمل 3 متغيرات في سطر واحد — ده مسموح في C وبيوفر مساحة."
+      },
+      {
+        raw: "int* ptr;",
+        tokens: [
+          { text: "int", cls: "kw",  meaning: "نوع الـ pointer" },
+          { text: "*",   cls: "ptr", meaning: "ده Pointer" },
+          { text: "ptr", cls: "var", meaning: "اسمه ptr" },
+          { text: ";",   cls: "semi",meaning: "نهاية السطر" },
+        ],
+        summary: "بنعمل Pointer من غير ما نحطه في أي متغير دلوقتي — هنوجّهه بعدين."
+      },
+      {
+        raw: "ptr = &a;",
+        tokens: [
+          { text: "ptr", cls: "var", meaning: "الـ Pointer" },
+          { text: "=",   cls: "op",  meaning: "التعيين — حط العنوان ده جوا ptr" },
+          { text: "&",   cls: "amp", meaning: "Address-of — جيب عنوان a" },
+          { text: "a",   cls: "var", meaning: "المتغير a" },
+          { text: ";",   cls: "semi",meaning: "نهاية السطر" },
+        ],
+        summary: "وجّهنا ptr يشاور على a — دلوقتي *ptr = 1"
+      },
+      {
+        raw: 'printf("%d\\n", *ptr);',
+        tokens: [
+          { text: "printf", cls: "fn",  meaning: "دالة الطباعة" },
+          { text: '"%d\\n"', cls: "str", meaning: "%d = عدد صحيح، \\n = سطر جديد" },
+          { text: "*ptr",   cls: "ptr", meaning: "روح العنوان اللي ptr شايله وجيب القيمة = 1" },
+        ],
+        summary: "بيطبع قيمة a عن طريق ptr. Output: 1"
+      },
+      {
+        raw: "ptr = &b;",
+        tokens: [
+          { text: "ptr", cls: "var", meaning: "نفس الـ pointer" },
+          { text: "=",   cls: "op",  meaning: "بنغيّر وجهة ptr" },
+          { text: "&b",  cls: "amp", meaning: "عنوان b دلوقتي" },
+          { text: ";",   cls: "semi",meaning: "نهاية السطر" },
+        ],
+        summary: "غيّرنا ptr يشاور على b بدل a — الـ pointer ممكن يتغير!"
+      }
+    ],
+    tip: "💡 الـ Pointer مش مثبت على متغير — ممكن يشاور على أي متغير من نفس النوع في أي وقت!"
+  },
+
+  // درس 4 — عدّل القيمة عن طريق الـ Pointer
+  {
+    lessonIndex: 4,
+    lines: [
+      {
+        raw: "int x = 5;",
+        tokens: [
+          { text: "int", cls: "kw",  meaning: "نوع البيانات" },
+          { text: "x",   cls: "var", meaning: "اسم المتغير" },
+          { text: "=",   cls: "op",  meaning: "التعيين" },
+          { text: "5",   cls: "num", meaning: "القيمة الابتدائية" },
+          { text: ";",   cls: "semi",meaning: "نهاية السطر" },
+        ],
+        summary: "x قيمته 5 في الذاكرة."
+      },
+      {
+        raw: "int* ptr = &x;",
+        tokens: [
+          { text: "int", cls: "kw",  meaning: "النوع" },
+          { text: "*",   cls: "ptr", meaning: "ده Pointer" },
+          { text: "ptr", cls: "var", meaning: "اسم الـ Pointer" },
+          { text: "=",   cls: "op",  meaning: "التعيين" },
+          { text: "&x",  cls: "amp", meaning: "عنوان x — حطه جوا ptr" },
+          { text: ";",   cls: "semi",meaning: "نهاية السطر" },
+        ],
+        summary: "ptr دلوقتي شايل عنوان x. يعني ptr يعرف فين x في الذاكرة."
+      },
+      {
+        raw: "*ptr = 20;",
+        tokens: [
+          { text: "*",   cls: "ptr", meaning: "Dereference في جهة التعيين — روح العنوان ده وعدّل القيمة هناك!" },
+          { text: "ptr", cls: "var", meaning: "الـ Pointer اللي شايل عنوان x" },
+          { text: "=",   cls: "op",  meaning: "التعيين — حط القيمة دي في المكان ده" },
+          { text: "20",  cls: "num", meaning: "القيمة الجديدة" },
+          { text: ";",   cls: "semi",meaning: "نهاية السطر" },
+        ],
+        summary: "بيروح عنوان x في الذاكرة ويكتب 20 بدل 5. x نفسها اتغيرت من غير ما نكتب x = 20 مباشرة!",
+        memHint: "قبل: 0x2000 → 5 | بعد *ptr=20: 0x2000 → 20"
+      },
+      {
+        raw: 'printf("%d", x);',
+        tokens: [
+          { text: "printf", cls: "fn",  meaning: "دالة الطباعة" },
+          { text: '"%d"',   cls: "str", meaning: "%d = اطبع عدد صحيح" },
+          { text: "x",      cls: "var", meaning: "المتغير x — قيمته اتغيرت لـ 20!" },
+        ],
+        summary: "بيطبع x وهي دلوقتي 20 مش 5. Output: 20"
+      }
+    ],
+    tip: "💡 *ptr = 20 غيّرت x نفسها في الذاكرة — من غير ما تلمس x مباشرة. ده سر قوة الـ Pointers!"
+  },
+
+  // درس 5 — Pointer Arithmetic
+  {
+    lessonIndex: 5,
+    lines: [
+      {
+        raw: "int arr[4] = {10, 20, 30, 40};",
+        tokens: [
+          { text: "int",    cls: "kw",  meaning: "نوع عناصر الـ array" },
+          { text: "arr",    cls: "var", meaning: "اسم الـ array" },
+          { text: "[4]",    cls: "punc",meaning: "حجم الـ array — 4 عناصر" },
+          { text: "=",      cls: "op",  meaning: "التعيين" },
+          { text: "{10, 20, 30, 40}", cls: "num", meaning: "القيم الابتدائية للعناصر — 10 في [0]، 20 في [1]، 30 في [2]، 40 في [3]" },
+          { text: ";",      cls: "semi",meaning: "نهاية السطر" },
+        ],
+        summary: "بنعمل array من 4 أرقام في الذاكرة. العناصر دايما متجاورة — كل int بياخد 4 bytes.",
+        memHint: "100→10 | 104→20 | 108→30 | 112→40  (كل عنصر يبعد 4 bytes)"
+      },
+      {
+        raw: "int* ptr = arr;",
+        tokens: [
+          { text: "int", cls: "kw",  meaning: "النوع" },
+          { text: "*",   cls: "ptr", meaning: "ده Pointer" },
+          { text: "ptr", cls: "var", meaning: "اسم الـ Pointer" },
+          { text: "=",   cls: "op",  meaning: "التعيين" },
+          { text: "arr", cls: "var", meaning: "اسم الـ array بيساوي تلقائياً عنوان أول عنصر — مش محتاج & هنا!" },
+          { text: ";",   cls: "semi",meaning: "نهاية السطر" },
+        ],
+        summary: "ptr بيشاور على أول عنصر في الـ array (arr[0]). arr وحده = عنوان [0]."
+      },
+      {
+        raw: 'printf("%d", *(ptr+0));',
+        tokens: [
+          { text: "printf",   cls: "fn",  meaning: "دالة الطباعة" },
+          { text: '"%d"',     cls: "str", meaning: "%d = عدد صحيح" },
+          { text: "*",        cls: "ptr", meaning: "Dereference — جيب القيمة اللي في العنوان ده" },
+          { text: "(ptr+0)",  cls: "var", meaning: "ptr + 0×4 bytes = عنوان [0] = 10" },
+        ],
+        summary: "ptr+0 = أول عنصر. *(ptr+0) = arr[0] = 10. Output: 10"
+      },
+      {
+        raw: 'printf("%d", *(ptr+1));',
+        tokens: [
+          { text: "*",       cls: "ptr", meaning: "جيب القيمة" },
+          { text: "(ptr+1)", cls: "var", meaning: "ptr + 1×4 bytes = بيقفز 4 bytes للأمام = عنوان [1]" },
+        ],
+        summary: "ptr+1 = ptr + 4 bytes = arr[1] = 20. Output: 20",
+        memHint: "+1 على int pointer = +4 bytes في الذاكرة الفعلية!"
+      },
+      {
+        raw: 'printf("%d", *(ptr+2));',
+        tokens: [
+          { text: "*",       cls: "ptr", meaning: "جيب القيمة" },
+          { text: "(ptr+2)", cls: "var", meaning: "ptr + 2×4 bytes = عنوان [2]" },
+        ],
+        summary: "ptr+2 = arr[2] = 30. Output: 30"
+      }
+    ],
+    tip: "💡 *(ptr+N) = arr[N] تماماً! الـ array بتشتغل بالـ pointers من جوا — بس بيسهّلوا عليك الكتابة."
+  },
+
+  // درس 6 — Pass by Value vs Reference
+  {
+    lessonIndex: 6,
+    lines: [
+      {
+        raw: "void change(int n) { n = 100; }",
+        tokens: [
+          { text: "void",     cls: "kw",  meaning: "الدالة مش بترجع قيمة" },
+          { text: "change",   cls: "fn",  meaning: "اسم الدالة" },
+          { text: "(int n)",  cls: "var", meaning: "بتستلم نسخة من الـ int — مش المتغير الأصلي!" },
+          { text: "n = 100",  cls: "var", meaning: "بتغير النسخة اللي جوا الدالة بس — مش الأصل!" },
+        ],
+        summary: "Pass by Value: الدالة بتاخد نسخة — أي تغيير جوا الدالة ما بأثرش على المتغير برة."
+      },
+      {
+        raw: "void change(int* n) { *n = 100; }",
+        tokens: [
+          { text: "void",    cls: "kw",  meaning: "الدالة مش بترجع قيمة" },
+          { text: "change",  cls: "fn",  meaning: "اسم الدالة" },
+          { text: "(int*",   cls: "ptr", meaning: "بتستلم Pointer — يعني عنوان المتغير الأصلي" },
+          { text: "n)",      cls: "var", meaning: "اسم الـ pointer جوا الدالة" },
+          { text: "*n",      cls: "ptr", meaning: "Dereference — روح العنوان ده" },
+          { text: "= 100",   cls: "op",  meaning: "وحط 100 فيه — بتعدل المتغير الأصلي مباشرة!" },
+        ],
+        summary: "Pass by Reference: بنبعت عنوان المتغير — الدالة بتعدل الأصل مباشرة!",
+        memHint: "الدالة شايفة نفس المكان في الذاكرة اللي فيه المتغير الأصلي"
+      },
+      {
+        raw: "change(&x);",
+        tokens: [
+          { text: "change", cls: "fn",  meaning: "اسم الدالة" },
+          { text: "(",      cls: "punc",meaning: "بداية المعاملات" },
+          { text: "&x",     cls: "amp", meaning: "بنبعت عنوان x — مش قيمتها! ده هو الـ Pass by Reference" },
+          { text: ");",     cls: "semi",meaning: "نهاية الاستدعاء" },
+        ],
+        summary: "بنستدعي الدالة ونبعتلها عنوان x. الدالة هتقدر تغير x نفسها في الذاكرة."
+      }
+    ],
+    tip: "💡 بتبعت x = نسخة، بتبعت &x = عنوان. الدالة هتغير الأصل بس لو بعتتلها العنوان!"
+  },
+
+  // درس 7 — اختبار
+  {
+    lessonIndex: 7,
+    lines: [
+      {
+        raw: "int x = 7;",
+        tokens: [
+          { text: "int", cls: "kw",  meaning: "نوع البيانات — عدد صحيح" },
+          { text: "x",   cls: "var", meaning: "اسم المتغير" },
+          { text: "=",   cls: "op",  meaning: "التعيين" },
+          { text: "7",   cls: "num", meaning: "القيمة" },
+          { text: ";",   cls: "semi",meaning: "نهاية السطر" },
+        ],
+        summary: "متغير x قيمته 7 في الذاكرة."
+      },
+      {
+        raw: "int* ptr = &x;",
+        tokens: [
+          { text: "int", cls: "kw",  meaning: "نوع الـ pointer" },
+          { text: "*",   cls: "ptr", meaning: "ده Pointer!" },
+          { text: "ptr", cls: "var", meaning: "اسم الـ Pointer" },
+          { text: "=",   cls: "op",  meaning: "التعيين" },
+          { text: "&",   cls: "amp", meaning: "جيب عنوان x" },
+          { text: "x",   cls: "var", meaning: "المتغير x" },
+          { text: ";",   cls: "semi",meaning: "نهاية السطر" },
+        ],
+        summary: "ptr دلوقتي شايل عنوان x في الذاكرة."
+      },
+      {
+        raw: 'printf("%d", *ptr);',
+        tokens: [
+          { text: "printf", cls: "fn",  meaning: "دالة الطباعة" },
+          { text: '"%d"',   cls: "str", meaning: "format = عدد صحيح" },
+          { text: "*",      cls: "ptr", meaning: "روح العنوان اللي ptr شايله" },
+          { text: "ptr",    cls: "var", meaning: "ptr شايل عنوان x — *ptr = قيمة x = 7" },
+          { text: ";",      cls: "semi",meaning: "نهاية السطر" },
+        ],
+        summary: "*ptr بيروح عنوان x ويجيب 7. Output: 7 ✅",
+        memHint: "*ptr → يروح 0x2000 → يجيب 7"
+      }
+    ],
+    tip: "💡 مبروك! اتعلمتِ الـ Pointers — ده من أصعب المفاهيم في C وعملتِه! 🎉"
+  }
+];
+
+function buildTokenHTML(tok) {
+  return `<span class="tok tok-${tok.cls}" title="${tok.meaning}">${tok.text}</span>`;
+}
+
+function buildBreakdown(lessonIdx) {
+  const data = lessonBreakdowns.find(b => b.lessonIndex === lessonIdx);
+  if (!data) return '';
+
+  let linesHTML = '';
+  data.lines.forEach((line, i) => {
+    const tokensHTML = line.tokens.map(buildTokenHTML).join(' ');
+
+    const detailRows = line.tokens
+      .filter(t => t.cls !== 'semi' || line.tokens.length <= 3)
+      .map(t => `<div class="tok-detail-row">
+        <span class="tdr-token ${t.cls}">${t.text}</span>
+        <span class="tdr-meaning">${t.meaning}</span>
+      </div>`).join('');
+
+    const memHintHTML = line.memHint
+      ? `<div class="bd-memory-hint">🧠 ${line.memHint}</div>`
+      : '';
+
+    linesHTML += `<div class="bd-line highlight-line">
+      <div class="bd-lnum">${i + 1}</div>
+      <div class="bd-content">
+        <div class="bd-code-raw">${tokensHTML}</div>
+        <div class="bd-explanation">
+          <div class="tok-details">${detailRows}</div>
+          <div class="bd-summary">→ ${line.summary}</div>
+          ${memHintHTML}
+        </div>
+      </div>
+    </div>`;
+  });
+
+  return `<div class="breakdown-box">
+    <div class="breakdown-header">
+      <span>🔍</span>
+      <span>شرح الكود — سطر بسطر وكل رمز ورمز</span>
+    </div>
+    <div class="breakdown-lines">
+      ${linesHTML}
+    </div>
+    ${data.tip ? `<div class="explain-tip" style="margin:0;border-radius:0 0 14px 14px;border:none;border-top:1px solid rgba(245,158,11,.15);">${data.tip}</div>` : ''}
+  </div>`;
+}
+
+// =====================================================
+
+// Simulated C execution (handles common pointer patterns)
+function simulateC(code) {
+  try {
+    let vars = {};
+    let output = [];
+
+    // strip comments
+    let clean = code.replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+
+    // parse int declarations: int x = 5; or int a=1, b=2;
+    const multiDecl = [...clean.matchAll(/int\s+((?:\w+\s*=\s*\d+\s*,?\s*)+);/g)];
+    multiDecl.forEach(m => {
+      const parts = m[1].split(',');
+      parts.forEach(p => {
+        const kv = p.trim().match(/(\w+)\s*=\s*(-?\d+)/);
+        if(kv) vars[kv[1]] = parseInt(kv[2]);
+      });
+    });
+
+    // parse array: int arr[] = {1,2,3};  or int arr[4] = {1,2,3,4};
+    const arrMatch = clean.match(/int\s+(\w+)\s*\[.*?\]\s*=\s*\{([^}]+)\}/);
+    if(arrMatch) vars[arrMatch[1]] = arrMatch[2].split(',').map(v=>parseInt(v.trim()));
+
+    // parse pointer declarations: int* ptr = &x; or int *ptr = &x;
+    const ptrDecls = [...clean.matchAll(/int\s*\*\s*(\w+)\s*=\s*(?:&(\w+)|(\w+))\s*;/g)];
+    ptrDecls.forEach(m => {
+      const pname = m[1];
+      const target = m[2] || m[3]; // &x or arr
+      vars[`__ptr_${pname}`] = target;
+    });
+
+    // ptr reassignment: ptr = &b; 
+    const ptrReassign = [...clean.matchAll(/(\w+)\s*=\s*&(\w+)\s*;/g)];
+    ptrReassign.forEach(m => {
+      if(vars[`__ptr_${m[1]}`] !== undefined) vars[`__ptr_${m[1]}`] = m[2];
+    });
+
+    // *ptr = value assignments
+    const derefAssign = [...clean.matchAll(/\*(\w+)\s*=\s*([^;]+);/g)];
+    derefAssign.forEach(m => {
+      const pname = m[1];
+      const target = vars[`__ptr_${pname}`];
+      if(target !== undefined) {
+        const val = eval(m[2].replace(/\*(\w+)/g, (_, p) => {
+          const t = vars[`__ptr_${p}`];
+          return t !== undefined ? (Array.isArray(vars[t]) ? vars[t][0] : vars[t]) : 0;
+        }).replace(/\b(\w+)\b/g, (_, v) => vars[v] !== undefined && !isNaN(vars[v]) ? vars[v] : _));
+        if(!isNaN(val)) vars[target] = parseInt(val);
+      }
+    });
+
+    // function calls like double_it(&x) — apply body if defined inline
+    const fnDefs = [...clean.matchAll(/void\s+(\w+)\s*\(\s*int\s*\*\s*(\w+)\s*\)\s*\{([^}]+)\}/g)];
+    fnDefs.forEach(fn => {
+      const fnName = fn[1], param = fn[2], body = fn[3];
+      const callMatch = clean.match(new RegExp(fnName+'\\s*\\(\\s*&(\\w+)\\s*\\)'));
+      if(callMatch) {
+        const targetVar = callMatch[1];
+        const assignMatch = body.match(/\*\s*\w+\s*=\s*([^;]+)/);
+        if(assignMatch) {
+          const expr = assignMatch[1].replace(new RegExp('\\*'+param,'g'), vars[targetVar]);
+          try { vars[targetVar] = parseInt(eval(expr)); } catch(e){}
+        }
+      }
+    });
+
+    // parse printfs
+    const prints = [...clean.matchAll(/printf\s*\(\s*"([^"]*)"\s*((?:,\s*[^,)][^)]*)*)\)/g)];
+    prints.forEach(m => {
+      let fmt = m[1].replace(/\\n/g,'\n').replace(/\\t/g,'  ');
+      const args = m[2] ? m[2].split(',').slice(1).map(a => a.trim()) : [];
+      let argIdx = 0;
+      let result = fmt.replace(/%[disfp]/g, spec => {
+        const arg = args[argIdx++] || '';
+        // dereference *ptr
+        const deref = arg.match(/^\*(\w+)$/);
+        if(deref) {
+          const t = vars[`__ptr_${deref[1]}`];
+          if(t !== undefined) {
+            const v = vars[t];
+            if(Array.isArray(v)) return spec==='%p' ? '0x'+Math.floor(Math.random()*0xffff+0x1000).toString(16) : v[0];
+            return spec==='%p' ? '0x'+Math.floor(Math.random()*0xffff+0x1000).toString(16) : (v ?? '?');
+          }
+        }
+        // ptr+N dereference *(ptr+N)
+        const arithDeref = arg.match(/^\*\(\s*(\w+)\s*\+\s*(\d+)\s*\)$/);
+        if(arithDeref) {
+          const t = vars[`__ptr_${arithDeref[1]}`];
+          const n = parseInt(arithDeref[2]);
+          if(t !== undefined && Array.isArray(vars[t])) return vars[t][n] ?? '?';
+        }
+        // &varname
+        const addrOf = arg.match(/^&(\w+)$/);
+        if(addrOf) return '0x'+Math.floor(Math.random()*0xffff+0x1000).toString(16);
+        // plain ptr (address)
+        if(vars[`__ptr_${arg}`] !== undefined && spec==='%p') return '0x'+Math.floor(Math.random()*0xffff+0x1000).toString(16);
+        // plain var
+        if(vars[arg] !== undefined) return Array.isArray(vars[arg]) ? vars[arg][0] : vars[arg];
+        // try eval
+        try {
+          const evaled = arg.replace(/\b(\w+)\b/g, (_,v) => vars[v]!==undefined?vars[v]:_);
+          return eval(evaled);
+        } catch(e){ return arg; }
+      });
+      output.push(result);
+    });
+
+    return output.join('') || null;
+  } catch(e) { return null; }
+}
+
+let lastRunOutput = null;
+
+function runCode() {
+  const code = document.getElementById('userCode').value.trim();
+  const box = document.getElementById('outputBox');
+  const btn = document.getElementById('explainBtn');
+
+  if(!code) {
+    box.className = 'output-box err';
+    box.textContent = '✏️ اكتب كود الأول!';
+    lastRunOutput = null;
+    return;
+  }
+
+  const result = simulateC(code);
+  if(result === null || result.trim() === '') {
+    box.className = 'output-box err';
+    box.textContent = '⚠️ مش لاقي output — تأكد إن فيه printf في كودك، وإنك كتبت الـ pointer صح';
+    lastRunOutput = null;
+  } else {
+    box.className = 'output-box ok';
+    box.textContent = '📤 Output:\n' + result;
+    lastRunOutput = result;
+  }
+
+  if(btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
+}
+
+async function askClaude() {
+  const code = document.getElementById('userCode').value.trim();
+  const box = document.getElementById('outputBox');
+  const lessonTopic = lessons[current].title;
+
+  if(!code) {
+    box.className='output-box hint';
+    box.innerHTML='✏️ اكتب كود وشغّله الأول! 😄';
+    return;
+  }
+
+  // لو مفيش output (كود غلط): قوله فين الغلط بس من غير شرح
+  if(lastRunOutput === null) {
+    box.className = 'output-box err';
+    box.innerHTML = '⚠️ الكود مش طالع output — صلّحه الأول وبعدين اضغط فسّرلي 😊';
+    return;
+  }
+
+  box.className = 'output-box hint';
+  box.innerHTML = '<span style="opacity:.7">🤖 Claude بيقرأ كودك سطر بسطر...</span>';
+
+  const system = `أنت مدرّس C programming بتشرح للطلاب المبتدئين بالعربي العامي البسيط (مش فصحى).
+الدرس الحالي عن: "${lessonTopic}".
+الكود شغّل وطلع output صح — مهمتك تشرح كل سطر سطر بسطر.
+
+ردّك يكون HTML بالشكل ده بالظبط — لا تكتب أي نص برا الـ HTML تاگز دي:
+
+<div class="explain-wrap">
+  <div class="explain-line">
+    <span class="explain-code">السطر بالكود</span>
+    <span class="explain-text">← شرح السطر ده بالعامي</span>
+  </div>
+  <div class="explain-tip">💡 جملة تشجيع وملخص إيه اللي اتعلمه</div>
+</div>
+
+قواعد:
+- كل سطر كود حقيقي له explain-line منفصل (السطور الفاضية تجاهلها)
+- في explain-code: اكتب الكود نفسه
+- في explain-text: اشرح بالعامي إيه اللي بيحصل في السطر ده
+- لو فيه pointer وضّح بتشبيه بسيط (زي البيت والعنوان)
+- لا تكتب أي نص أو markdown برا الـ HTML`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system,
+        messages: [{ role: 'user', content: `الكود:\n\`\`\`c\n${code}\n\`\`\`\nالـ output: ${lastRunOutput}\nاشرح سطر بسطر.` }]
+      })
+    });
+    const data = await resp.json();
+    const raw = data.content?.map(b=>b.text||'').join('') || '';
+    const html = raw.replace(/```html?/gi,'').replace(/```/g,'').trim();
+    box.className = 'output-box hint';
+    box.innerHTML = html || '🤷 مفيش رد';
+  } catch(e) {
+    box.className = 'output-box err';
+    box.innerHTML = '❌ مشكلة في الاتصال';
+  }
+}
+
+function showHint() {
+  const box = document.getElementById('outputBox');
+  box.className = 'output-box hint';
+  box.textContent = lessons[current].tryit?.hint || '💡 مفيش تلميح لهذا الدرس';
+}
+
+function resetCode() {
+  const ta = document.getElementById('userCode');
+  if(ta) ta.value = lessons[current].tryit?.starter || '';
+  const box = document.getElementById('outputBox');
+  if(box) { box.className = 'output-box'; box.textContent = '✏️ اكتب كودك فوق واضغط شغّل...'; }
+  lastRunOutput = null;
+  const btn = document.getElementById('explainBtn');
+  if(btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
+}
+
+function checkAns(i) {
+  const l = lessons[current];
+  document.querySelectorAll('.quiz-opt').forEach((o,idx) => {
+    if(idx === l.correct) o.className = 'quiz-opt correct';
+    else if(idx === i && i !== l.correct) o.className = 'quiz-opt wrong';
+    else o.className = 'quiz-opt disabled';
+  });
+  const fb = document.getElementById('quizFb');
+  fb.className = `quiz-feedback show ${i===l.correct?'ok':'fail'}`;
+  fb.textContent = i===l.correct ? l.explanation : `❌ مش صح! الإجابة الصحيحة هي: "${l.options[l.correct]}" — ${l.explanation}`;
+}
+
+function next() { completed.add(current); if(current<lessons.length-1){current++;lastRunOutput=null;render();} }
+function prev() { if(current>0){current--;lastRunOutput=null;render();} }
+
+function showCelebration() {
+  document.getElementById('celebrationOverlay').classList.add('show');
+  // confetti
+  const wrap = document.getElementById('confettiWrap');
+  wrap.innerHTML = '';
+  const colors = ['#4f9eff','#a78bfa','#f472b6','#34d399','#fbbf24','#ef4444
+  for(let i = 0; i < 80; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = Math.random()*100 + 'vw';
+    el.style.background = colors[Math.floor(Math.random()*colors.length)];
+    el.style.width = (8 + Math.random()*8) + 'px';
+    el.style.height = (8 + Math.random()*8) + 'px';
+    el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    el.style.animationDuration = (2 + Math.random()*3) + 's';
+    el.style.animationDelay = (Math.random()*2) + 's';
+    wrap.appendChild(el);
+  }
+}
+
+render();
+</script>
+</body>
+</html>
